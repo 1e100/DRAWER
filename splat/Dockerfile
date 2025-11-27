@@ -19,7 +19,7 @@ LABEL org.opencontainers.image.base.name="docker.io/library/nvidia/cuda:${CUDA_V
 # Variables used at build time.
 ## CUDA architectures, required by Colmap and tiny-cuda-nn.
 ## NOTE: All commonly used GPU architectures are included and supported here. To speedup the image build process remove all architectures but the one of your explicit GPU. Find details here: https://developer.nvidia.com/cuda-gpus (8.6 translates to 86 in the line below) or in the docs.
-ARG CUDA_ARCHITECTURES=90;89;86;80;75;70;61;52;37
+ARG CUDA_ARCHITECTURES=90;89;86;80
 
 # Set environment variables.
 ## Set non-interactive to prevent asking for user inputs blocking image creation.
@@ -28,6 +28,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Berlin
 ## CUDA Home, required to find CUDA in some packages.
 ENV CUDA_HOME="/usr/local/cuda"
+ENV MAX_JOBS=8
 
 # Install required apt packages and clear cache afterwards.
 RUN apt-get update && \
@@ -127,18 +128,21 @@ WORKDIR /home/${USERNAME}
 ENV PATH="${PATH}:/home/${USERNAME}/.local/bin"
 
 # Upgrade pip and install packages.
-RUN python3.10 -m pip install --no-cache-dir --upgrade pip setuptools==69.5.1 pathtools promise pybind11 omegaconf
+RUN python3.10 -m pip install --no-cache-dir --upgrade pip setuptools==69.5.1 pathtools promise pybind11 omegaconf ninja
 
 # Install pytorch and submodules
 # echo "${CUDA_VERSION}" | sed 's/.$//' | tr -d '.' -- CUDA_VERSION -> delete last digit -> delete all '.'
 RUN CUDA_VER=$(echo "${CUDA_VERSION}" | sed 's/.$//' | tr -d '.') && python3.10 -m pip install --no-cache-dir \
     torch==2.1.2+cu${CUDA_VER} \
     torchvision==0.16.2+cu${CUDA_VER} \
-        --extra-index-url https://download.pytorch.org/whl/cu${CUDA_VER}
+        --extra-index-url https://download.pytorch.org/whl/cu${CUDA_VER} && \ 
+    python3.10 -m pip install git+https://github.com/NVlabs/nvdiffrast.git --no-build-isolation && \
+    python3.10 -m pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable" --no-build-isolation
 
 # Install tiny-cuda-nn (we need to set the target architectures as environment variable first).
 ENV TCNN_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}
-RUN python3.10 -m pip install --no-cache-dir git+https://github.com/NVlabs/tiny-cuda-nn.git#subdirectory=bindings/torch
+# Disable build isolation so the already installed torch is visible during the build.
+RUN python3.10 -m pip install --no-cache-dir --no-build-isolation git+https://github.com/NVlabs/tiny-cuda-nn.git#subdirectory=bindings/torch
 
 # Install pycolmap, required by hloc.
 RUN git clone --branch v0.4.0 --recursive https://github.com/colmap/pycolmap.git && \
