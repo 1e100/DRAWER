@@ -39,7 +39,15 @@ RUN apt-get update && \
     python3.8-dev \
     python3-pip \
     qtbase5-dev \
-    wget
+    wget \
+    libavformat-dev \
+    libavdevice-dev \
+    libavcodec-dev \
+    libavutil-dev \
+    libavfilter-dev \
+    libswscale-dev \
+    libswresample-dev 
+
 
 # Install GLOG (required by ceres).
 RUN git clone --branch v0.6.0 https://github.com/google/glog.git --single-branch && \
@@ -97,6 +105,7 @@ RUN python3.8 -m pip install git+https://github.com/NVlabs/tiny-cuda-nn.git#subd
 
 # Copy nerfstudio folder and give ownership to user.
 ADD . /home/user/nerfstudio
+ENV PIP_CONSTRAINT=/home/user/nerfstudio/pip_constraints.txt
 USER root
 RUN chown -R user:user /home/user/nerfstudio
 USER 1000:1000
@@ -111,4 +120,3 @@ WORKDIR /workspace
 
 # Install nerfstudio cli auto completion and enter shell if no command was provided.
 CMD ns-install-cli --mode install && /bin/bash
-
