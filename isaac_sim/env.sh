@@ -1,4 +1,11 @@
-conda create -n isaacsim -y python=3.10
+
+#!/usr/bin/env bash
+
+# set -euo pipefail
+
+eval "$(conda shell.bash hook)"
+
+conda create --name isaacsim -y python=3.10
 conda activate isaacsim
 
 pip install isaacsim[all]==4.5.0 --extra-index-url https://pypi.nvidia.com
