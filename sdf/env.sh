@@ -1,5 +1,17 @@
+#!/usr/bin/env bash
+
+# set -euo pipefail
+
+eval "$(conda shell.bash hook)"
+
 conda create --name drawer_sdf -y python=3.8
 conda activate drawer_sdf
+conda install -y nvidia::cuda=11.8.0
+
+export CUDA_HOME="$CONDA_PREFIX"
+export PATH="$CUDA_HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$CUDA_HOME/lib:$CUDA_HOME/lib64:$LD_LIBRARY_PATH"
+
 # ensure gcc version 11.x and nvcc version 11.8
 pip install torch==2.1.2+cu118 torchvision==0.16.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
 pip install git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
@@ -36,4 +48,4 @@ pip install visdom
 
 pip install kaolin==0.15.0 -f https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.1.1_cu118.html
 
-pip install transformations
+CC=/usr/bin/gcc CXX=/usr/bin/g++ pip install transformations
