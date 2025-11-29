@@ -1,5 +1,7 @@
+#!/usr/bin/env bash
+
 data_name="cs_kitchen"
-data_dir=/home/hongchix/data/${data_name}
+data_dir=/home/dmitry/Dev/third_party/DRAWER/data/${data_name}
 image_dir="images_2"
 downscale_factor=2
 
@@ -7,6 +9,7 @@ downscale_factor=2
 
 cd marigold
 
+eval "$(conda shell.bash hook)"
 conda activate drawer_sdf
 
 python run.py \
