@@ -1,3 +1,4 @@
+*.py[co]
 3DOI/outputs
 3DOI/outputs/*
 3DOI/checkpoints
