@@ -1,4 +1,5 @@
 *.py[co]
+*.so
 data/
 3DOI/outputs
 3DOI/outputs/*
